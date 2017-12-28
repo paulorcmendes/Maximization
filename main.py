@@ -4,6 +4,8 @@ Created on Wed Dec 27 15:55:18 2017
 
 @author: paulo
 """
+import numpy as np
+
 CROSSOVER_RATE = 0.9 #RATE OF CROSSOVER
 MUTATION_RATE = 0.001 #RATE OF MUTATION
 POP_SIZE = 100 #POPULATION SIZE
@@ -13,7 +15,6 @@ SCHRM_SIZE = CHRM_SIZE/2 #SIZE OF THE PART OF THE CHROMOSSOME THAT REPRSENTS X1
 MIN_INTERVAL = -32768
 MAX_INTERVAL = 32768
 
-import numpy as np
 #creates a new population
 def NewPop():
     return np.random.randint(0, 2, size=(POP_SIZE, CHRM_SIZE))
@@ -26,12 +27,15 @@ def f(x):
     return -20*np.exp(-0.2*np.sqrt((1.0/x.__len__())*sum([xi**2 for xi in x]))) - np.exp((1.0/x.__len__())*sum([np.cos(2*np.pi*xi) for xi in x])) + 20 + np.exp(1)
 #function that receives a single chromossome an return its fitness
 def Fitness(chrm):
+    x1, x2 = ExtractX1X2(chrm)
+    x = [x1, x2]
+    return 1.0/(1+f(x))
+def ExtractX1X2(chrm):
     ch1 = chrm[:(SCHRM_SIZE)]
     ch2 = chrm[(SCHRM_SIZE):]    
     x1 = MIN_INTERVAL+(MAX_INTERVAL-MIN_INTERVAL)*float(BinToInt(ch1))/((2**SCHRM_SIZE) - 1)
     x2 = MIN_INTERVAL+(MAX_INTERVAL-MIN_INTERVAL)*float(BinToInt(ch2))/((2**SCHRM_SIZE) - 1)
-    x = [x1, x2]
-    return 1.0/(1+f(x))
+    return x1, x2
 #function that returns the finesses of an entire population in the form of an array
 def PopFitness(pop):
     return [Fitness(chrm) for chrm in pop]
@@ -57,10 +61,16 @@ def Mutation(chrm):
     return chrm
 
 pop = NewPop()
-
+#pop[0] = [0]*64
+#pop[0][0] = 1
+#pop[0][32] = 1
+#print pop[0]
+best = []
+mean = []
 for gen in range(N_GENERATIONS):   
     fitness = PopFitness(pop)
-    nextPop = []
+    nextPop = []    
+    bestChrm = pop[fitness.index(np.max(fitness))]
     for i in range(POP_SIZE/2):
         father = pop[RoulleteSelection(fitness)]
         mother = pop[RoulleteSelection(fitness)]
@@ -78,29 +88,31 @@ for gen in range(N_GENERATIONS):
             daughter = Mutation(daughter)
         nextPop.append(son)
         nextPop.append(daughter)
-    
     pop = nextPop
-    print np.max(fitness)
-  
+    best.append(np.max(fitness))
+    mean.append(np.mean(fitness))
+    
+    #elitism
+    fitness = PopFitness(pop)
+    pop[fitness.index(np.min(fitness))] = bestChrm
 
-
-
+indexSol = fitness.index(np.max(fitness))
+x1, x2 = ExtractX1X2(pop[indexSol])
+print str(x1)+" "+str(x2)
+print best
+    
 '''
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 fig = plt.figure()
 ax = Axes3D(fig)
-x = np.arange(-10.0, 10.0, 0.1)
+x = np.arange(0, 1000, 0.5)
 y = x[:]
 x, y = np.meshgrid(x, y)
 z = x[:]+5
 for i in range(0,x.__len__()):
     for j in range(0,x.__len__()):
-        z[i][j] = Fitness([x[i][j],y[i][j]])
-print z
-print x
-print y
-
+        z[i][j] = f([x[i][j],y[i][j]])
 ax.plot_surface(x, y, z, cmap=cm.coolwarm)
 '''
