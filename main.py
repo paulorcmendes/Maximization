@@ -12,8 +12,8 @@ POP_SIZE = 100 #POPULATION SIZE
 N_GENERATIONS = 1000 #MAXIMUM NUMBER OF GENERATIONS
 CHRM_SIZE = 64 #CHROMOSSOME SIZE IN BITS
 SCHRM_SIZE = CHRM_SIZE/2 #SIZE OF THE PART OF THE CHROMOSSOME THAT REPRSENTS X1
-MIN_INTERVAL = -32768
-MAX_INTERVAL = 32768
+MIN_INTERVAL = -33
+MAX_INTERVAL = 33
 
 #creates a new population
 def NewPop():
@@ -60,46 +60,47 @@ def Mutation(chrm):
     chrm[pos] = 1 - chrm[pos]
     return chrm
 
-pop = NewPop()
-#pop[0] = [0]*64
-#pop[0][0] = 1
-#pop[0][32] = 1
-#print pop[0]
-best = []
-mean = []
-for gen in range(N_GENERATIONS):   
-    fitness = PopFitness(pop)
-    nextPop = []    
-    bestChrm = pop[fitness.index(np.max(fitness))]
-    for i in range(POP_SIZE/2):
-        father = pop[RoulleteSelection(fitness)]
-        mother = pop[RoulleteSelection(fitness)]
+for exe in range(0,30):
+    pop = NewPop()
+    #pop[0] = [0]*64
+    #pop[0][0] = 1
+    #pop[0][32] = 1
+    #print pop[0]
+    best = []
+    mean = []
+    for gen in range(N_GENERATIONS):   
+        fitness = PopFitness(pop)
+        nextPop = []    
+        bestChrm = pop[fitness.index(np.max(fitness))]
+        for i in range(POP_SIZE/2):
+            father = pop[RoulleteSelection(fitness)]
+            mother = pop[RoulleteSelection(fitness)]
+            
+            tx = np.random.random()
+            if tx <= CROSSOVER_RATE:           
+                son, daughter = Crossover(father, mother)
+            else:
+                son, daughter = father, mother
+            tx = np.random.random()
+            if tx <= MUTATION_RATE:
+                son = Mutation(son)
+            tx = np.random.random()
+            if tx <= MUTATION_RATE:
+                daughter = Mutation(daughter)
+            nextPop.append(son)
+            nextPop.append(daughter)
+        pop = nextPop
+        best.append(np.max(fitness))
+        mean.append(np.mean(fitness))
         
-        tx = np.random.random()
-        if tx <= CROSSOVER_RATE:           
-            son, daughter = Crossover(father, mother)
-        else:
-            son, daughter = father, mother
-        tx = np.random.random()
-        if tx <= MUTATION_RATE:
-            son = Mutation(son)
-        tx = np.random.random()
-        if tx <= MUTATION_RATE:
-            daughter = Mutation(daughter)
-        nextPop.append(son)
-        nextPop.append(daughter)
-    pop = nextPop
-    best.append(np.max(fitness))
-    mean.append(np.mean(fitness))
+        #elitism
+        fitness = PopFitness(pop)
+        pop[fitness.index(np.min(fitness))] = bestChrm
     
-    #elitism
-    fitness = PopFitness(pop)
-    pop[fitness.index(np.min(fitness))] = bestChrm
-
-indexSol = fitness.index(np.max(fitness))
-x1, x2 = ExtractX1X2(pop[indexSol])
-print str(x1)+" "+str(x2)
-print best
+    indexSol = fitness.index(np.max(fitness))
+    x1, x2 = ExtractX1X2(pop[indexSol])
+    print str(exe+1)+":"+str(x1)+","+str(x2)
+#print best
     
 '''
 import matplotlib.pyplot as plt
