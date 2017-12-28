@@ -8,7 +8,7 @@ CROSSOVER_RATE = 0.9 #RATE OF CROSSOVER
 MUTATION_RATE = 0.001 #RATE OF MUTATION
 POP_SIZE = 100 #POPULATION SIZE
 N_GENERATIONS = 1000 #MAXIMUM NUMBER OF GENERATIONS
-CHRM_SIZE = 64 #CHROMOSSOME SIZE IN BITS
+CHRM_SIZE = 6 #CHROMOSSOME SIZE IN BITS
 SCHRM_SIZE = CHRM_SIZE/2 #SIZE OF THE PART OF THE CHROMOSSOME THAT REPRSENTS X1
 MIN_INTERVAL = -32768
 MAX_INTERVAL = 32768
@@ -39,7 +39,7 @@ def PopFitness(pop):
 #roullete
 def RoulleteSelection(fitness):
     perc = np.array(fitness)/sum(fitness)
-    total = 0
+    total = 0.0
     for i in range(len(perc)):
         perc[i] += total
         total = perc[i]
@@ -47,9 +47,16 @@ def RoulleteSelection(fitness):
     for i in range(len(perc)):
         if s <= perc[i]:
             return i
+#crossing two chromossomes        
+def Crossover(father, mother):
+    limit = np.random.randint(CHRM_SIZE)
+    return (list(father[:limit])+list(mother[limit:]),list(mother[:limit])+list(father[limit:]))
+#changing a bit in a random position
+def Mutation(chrm):
+    pos = np.random.randint(CHRM_SIZE)
+    chrm[pos] = 1 - chrm[pos]
+    return chrm
 
-pop = NewPop()
-print RoulleteSelection(PopFitness(pop))
 
 '''
 import matplotlib.pyplot as plt
