@@ -9,6 +9,9 @@ MUTATION_RATE = 0.001 #RATE OF MUTATION
 POP_SIZE = 100 #POPULATION SIZE
 N_GENERATIONS = 1000 #MAXIMUM NUMBER OF GENERATIONS
 CHRM_SIZE = 64 #CHROMOSSOME SIZE IN BITS
+SCHRM_SIZE = CHRM_SIZE/2 #SIZE OF THE PART OF THE CHROMOSSOME THAT REPRSENTS X1
+MIN_INTERVAL = -32768
+MAX_INTERVAL = 32768
 
 import numpy as np
 
@@ -20,8 +23,14 @@ def NewPop():
 def BinToInt(nBin):
     return int(''.join(str(x) for x in nBin), 2)
 #function to be maximized
-def Fitness(x):
-    return 1/(1+f(x))
+def Fitness(chrm):
+    ch1 = chrm[:(SCHRM_SIZE)]
+    ch2 = chrm[(SCHRM_SIZE):]    
+    x1 = MIN_INTERVAL+(MAX_INTERVAL-MIN_INTERVAL)*float(BinToInt(ch1))/((2**SCHRM_SIZE) - 1)
+    x2 = MIN_INTERVAL+(MAX_INTERVAL-MIN_INTERVAL)*float(BinToInt(ch2))/((2**SCHRM_SIZE) - 1)
+    x = [x1, x2]
+    print x
+    return 1.0/(1+f(x))
 #function f(x)
 def f(x):
     return -20*np.exp(-0.2*np.sqrt((1.0/x.__len__())*sum([xi**2 for xi in x]))) - np.exp((1.0/x.__len__())*sum([np.cos(2*np.pi*xi) for xi in x])) + 20 + np.exp(1)
@@ -32,7 +41,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 fig = plt.figure()
 ax = Axes3D(fig)
-x = np.arange(-100.0, 100.0, 0.1)
+x = np.arange(-10.0, 10.0, 0.1)
 y = x[:]
 x, y = np.meshgrid(x, y)
 z = x[:]+5
