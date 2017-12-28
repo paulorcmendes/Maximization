@@ -12,8 +12,8 @@ POP_SIZE = 100 #POPULATION SIZE
 N_GENERATIONS = 1000 #MAXIMUM NUMBER OF GENERATIONS
 CHRM_SIZE = 64 #CHROMOSSOME SIZE IN BITS
 SCHRM_SIZE = CHRM_SIZE/2 #SIZE OF THE PART OF THE CHROMOSSOME THAT REPRSENTS X1
-MIN_INTERVAL = -33
-MAX_INTERVAL = 33
+MIN_INTERVAL = -32.768
+MAX_INTERVAL = 32.768
 
 #creates a new population
 def NewPop():
@@ -60,60 +60,60 @@ def Mutation(chrm):
     chrm[pos] = 1 - chrm[pos]
     return chrm
 
-for exe in range(0,30):
-    pop = NewPop()
-    #pop[0] = [0]*64
-    #pop[0][0] = 1
-    #pop[0][32] = 1
-    #print pop[0]
-    best = []
-    mean = []
-    for gen in range(N_GENERATIONS):   
-        fitness = PopFitness(pop)
-        nextPop = []    
-        bestChrm = pop[fitness.index(np.max(fitness))]
-        for i in range(POP_SIZE/2):
-            father = pop[RoulleteSelection(fitness)]
-            mother = pop[RoulleteSelection(fitness)]
-            
-            tx = np.random.random()
-            if tx <= CROSSOVER_RATE:           
-                son, daughter = Crossover(father, mother)
-            else:
-                son, daughter = father, mother
-            tx = np.random.random()
-            if tx <= MUTATION_RATE:
-                son = Mutation(son)
-            tx = np.random.random()
-            if tx <= MUTATION_RATE:
-                daughter = Mutation(daughter)
-            nextPop.append(son)
-            nextPop.append(daughter)
-        pop = nextPop
-        best.append(np.max(fitness))
-        mean.append(np.mean(fitness))
+#for exe in range(0,30):
+pop = NewPop()
+best = []
+mean = []
+for gen in range(N_GENERATIONS):   
+    fitness = PopFitness(pop)
+    nextPop = []    
+    bestChrm = pop[fitness.index(np.max(fitness))]
+    for i in range(POP_SIZE/2):
+        father = pop[RoulleteSelection(fitness)]
+        mother = pop[RoulleteSelection(fitness)]
         
-        #elitism
-        fitness = PopFitness(pop)
-        pop[fitness.index(np.min(fitness))] = bestChrm
+        tx = np.random.random()
+        if tx <= CROSSOVER_RATE:           
+            son, daughter = Crossover(father, mother)
+        else:
+            son, daughter = father, mother
+        tx = np.random.random()
+        if tx <= MUTATION_RATE:
+            son = Mutation(son)
+        tx = np.random.random()
+        if tx <= MUTATION_RATE:
+            daughter = Mutation(daughter)
+        nextPop.append(son)
+        nextPop.append(daughter)
+    pop = nextPop
+    best.append(np.max(fitness))
+    mean.append(np.mean(fitness))
     
-    indexSol = fitness.index(np.max(fitness))
-    x1, x2 = ExtractX1X2(pop[indexSol])
-    print str(exe+1)+":"+str(x1)+","+str(x2)
-#print best
+    #elitism
+    fitness = PopFitness(pop)
+    pop[fitness.index(np.min(fitness))] = bestChrm
+
+bestFitness = np.max(fitness)
+indexSol = fitness.index(bestFitness)
+x1, x2 = ExtractX1X2(pop[indexSol])
+print "Solution: ("+str(x1)+", "+str(x2)+") with fitness: "+str(bestFitness)
     
-'''
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 fig = plt.figure()
-ax = Axes3D(fig)
-x = np.arange(0, 1000, 0.5)
+ax = fig.add_subplot(111, projection='3d')
+x = np.arange(MIN_INTERVAL/10, MAX_INTERVAL/10, 0.01)
 y = x[:]
 x, y = np.meshgrid(x, y)
 z = x[:]+5
 for i in range(0,x.__len__()):
     for j in range(0,x.__len__()):
-        z[i][j] = f([x[i][j],y[i][j]])
-ax.plot_surface(x, y, z, cmap=cm.coolwarm)
-'''
+        z[i][j] = 1.0/(1+f([x[i][j],y[i][j]]))
+        #z[i][j] = f([x[i][j],y[i][j]])
+#ax.plot_surface(x, y, z, cmap=cm.coolwarm)
+ax.plot_wireframe(x, y, z, rstride=10, cstride=10)
+ax.scatter(x1, x2, bestFitness, c='g', marker='^')
+ax.text(x1, x2, bestFitness, "Best Point Found", color='green')
+
+plt.show()
