@@ -22,18 +22,34 @@ def NewPop():
 #converts a binary number represented in a array into an integer number
 def BinToInt(nBin):
     return int(''.join(str(x) for x in nBin), 2)
-#function to be maximized
+#function f(x)
+def f(x):
+    return -20*np.exp(-0.2*np.sqrt((1.0/x.__len__())*sum([xi**2 for xi in x]))) - np.exp((1.0/x.__len__())*sum([np.cos(2*np.pi*xi) for xi in x])) + 20 + np.exp(1)
+#function that receives a single chromossome an return its fitness
 def Fitness(chrm):
     ch1 = chrm[:(SCHRM_SIZE)]
     ch2 = chrm[(SCHRM_SIZE):]    
     x1 = MIN_INTERVAL+(MAX_INTERVAL-MIN_INTERVAL)*float(BinToInt(ch1))/((2**SCHRM_SIZE) - 1)
     x2 = MIN_INTERVAL+(MAX_INTERVAL-MIN_INTERVAL)*float(BinToInt(ch2))/((2**SCHRM_SIZE) - 1)
     x = [x1, x2]
-    print x
     return 1.0/(1+f(x))
-#function f(x)
-def f(x):
-    return -20*np.exp(-0.2*np.sqrt((1.0/x.__len__())*sum([xi**2 for xi in x]))) - np.exp((1.0/x.__len__())*sum([np.cos(2*np.pi*xi) for xi in x])) + 20 + np.exp(1)
+#function that returns the finesses of an entire population in the form of an array
+def PopFitness(pop):
+    return [Fitness(chrm) for chrm in pop]
+#roullete
+def RoulleteSelection(fitness):
+    perc = np.array(fitness)/sum(fitness)
+    total = 0
+    for i in range(len(perc)):
+        perc[i] += total
+        total = perc[i]
+    s = np.random.random()
+    for i in range(len(perc)):
+        if s <= perc[i]:
+            return i
+
+pop = NewPop()
+print RoulleteSelection(PopFitness(pop))
 
 '''
 import matplotlib.pyplot as plt
