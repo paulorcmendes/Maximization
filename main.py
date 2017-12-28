@@ -8,13 +8,12 @@ CROSSOVER_RATE = 0.9 #RATE OF CROSSOVER
 MUTATION_RATE = 0.001 #RATE OF MUTATION
 POP_SIZE = 100 #POPULATION SIZE
 N_GENERATIONS = 1000 #MAXIMUM NUMBER OF GENERATIONS
-CHRM_SIZE = 6 #CHROMOSSOME SIZE IN BITS
+CHRM_SIZE = 64 #CHROMOSSOME SIZE IN BITS
 SCHRM_SIZE = CHRM_SIZE/2 #SIZE OF THE PART OF THE CHROMOSSOME THAT REPRSENTS X1
 MIN_INTERVAL = -32768
 MAX_INTERVAL = 32768
 
 import numpy as np
-
 #creates a new population
 def NewPop():
     return np.random.randint(0, 2, size=(POP_SIZE, CHRM_SIZE))
@@ -56,6 +55,34 @@ def Mutation(chrm):
     pos = np.random.randint(CHRM_SIZE)
     chrm[pos] = 1 - chrm[pos]
     return chrm
+
+pop = NewPop()
+
+for gen in range(N_GENERATIONS):   
+    fitness = PopFitness(pop)
+    nextPop = []
+    for i in range(POP_SIZE/2):
+        father = pop[RoulleteSelection(fitness)]
+        mother = pop[RoulleteSelection(fitness)]
+        
+        tx = np.random.random()
+        if tx <= CROSSOVER_RATE:           
+            son, daughter = Crossover(father, mother)
+        else:
+            son, daughter = father, mother
+        tx = np.random.random()
+        if tx <= MUTATION_RATE:
+            son = Mutation(son)
+        tx = np.random.random()
+        if tx <= MUTATION_RATE:
+            daughter = Mutation(daughter)
+        nextPop.append(son)
+        nextPop.append(daughter)
+    
+    pop = nextPop
+    print np.max(fitness)
+  
+
 
 
 '''
