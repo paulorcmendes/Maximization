@@ -63,54 +63,58 @@ def Mutation(chrm):
     chrm[pos] = 1 - chrm[pos]
     return chrm
 
-#for exe in range(0,30):
-pop = NewPop()
-best = []
-mean = []
-for gen in range(N_GENERATIONS):   
+solutions = []
+for exe in range(0,30):
+    
+    pop = NewPop()
+    best = []
+    mean = []
+    for gen in range(N_GENERATIONS):   
+        fitness = PopFitness(pop)
+        best.append(np.max(fitness))
+        mean.append(np.mean(fitness))
+        #<elitism>
+        bestChrm = pop[fitness.index(best[-1])]
+        #</elitism>
+        nextPop = []    
+        for i in range(POP_SIZE/2):
+            father = pop[RoulleteSelection(fitness)]
+            mother = pop[RoulleteSelection(fitness)]
+            
+            tx = np.random.random()
+            if tx <= CROSSOVER_RATE:           
+                son, daughter = Crossover(father, mother)
+            else:
+                son, daughter = father, mother
+            tx = np.random.random()
+            if tx <= MUTATION_RATE:
+                son = Mutation(son)
+            tx = np.random.random()
+            if tx <= MUTATION_RATE:
+                daughter = Mutation(daughter)
+            nextPop.append(son)
+            nextPop.append(daughter)
+        pop = nextPop
+        #elitism
+        auxF = PopFitness(pop)
+        pop[auxF.index(np.min(auxF))] = bestChrm
+        #</elitism>
     fitness = PopFitness(pop)
     best.append(np.max(fitness))
-    mean.append(np.mean(fitness))
-    #<elitism>
-    bestChrm = pop[fitness.index(best[-1])]
-    #</elitism>
-    nextPop = []    
-    for i in range(POP_SIZE/2):
-        father = pop[RoulleteSelection(fitness)]
-        mother = pop[RoulleteSelection(fitness)]
-        
-        tx = np.random.random()
-        if tx <= CROSSOVER_RATE:           
-            son, daughter = Crossover(father, mother)
-        else:
-            son, daughter = father, mother
-        tx = np.random.random()
-        if tx <= MUTATION_RATE:
-            son = Mutation(son)
-        tx = np.random.random()
-        if tx <= MUTATION_RATE:
-            daughter = Mutation(daughter)
-        nextPop.append(son)
-        nextPop.append(daughter)
-    pop = nextPop
-    #elitism
-    auxF = PopFitness(pop)
-    pop[auxF.index(np.min(auxF))] = bestChrm
-    #</elitism>
-fitness = PopFitness(pop)
-best.append(np.max(fitness))
-mean.append(np.mean(fitness))   
+    mean.append(np.mean(fitness))   
+    
+    solutions.append(best[-1])
+    indexSol = fitness.index(solutions[-1])
+    x1, x2 = ExtractX1X2(pop[indexSol])
+    print "Solution: ("+str(x1)+", "+str(x2)+") with fitness: "+str(solutions[-1])
+    
+    x = np.arange(0.0, N_GENERATIONS+1, 1.0)
+    plt.plot(x, mean)
+    plt.plot(x, best)
+    plt.show()
 
-bestFitness = best[-1]
-indexSol = fitness.index(bestFitness)
-x1, x2 = ExtractX1X2(pop[indexSol])
-print "Solution: ("+str(x1)+", "+str(x2)+") with fitness: "+str(bestFitness)
-
-x = np.arange(0.0, N_GENERATIONS+1, 1.0)
-plt.plot(x, mean)
-plt.plot(x, best)
-plt.show()
-
+print "Mean of Solutions: "+str(np.mean(solutions))
+print "Standard Deviation: "+str(np.std(solutions))
 
 '''    
 fig = plt.figure()
@@ -123,10 +127,10 @@ for i in range(0,x.__len__()):
     for j in range(0,x.__len__()):
         z[i][j] = 1.0/(1+f([x[i][j],y[i][j]]))
         #z[i][j] = f([x[i][j],y[i][j]])
-#ax.plot_surface(x, y, z, cmap=cm.coolwarm)
-ax.plot_wireframe(x, y, z, rstride=10, cstride=10)
-ax.scatter(x1, x2, bestFitness, c='g', marker='^')
-ax.text(x1, x2, bestFitness, "Best Point Found", color='green')
+ax.plot_surface(x, y, z, cmap=cm.coolwarm)
+#ax.plot_wireframe(x, y, z, rstride=10, cstride=10)
+#ax.scatter(x1, x2, bestFitness, c='g', marker='^')
+#ax.text(x1, x2, bestFitness, "Best Point Found", color='green')
 
 plt.show()
 '''
