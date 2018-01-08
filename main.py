@@ -5,6 +5,9 @@ Created on Wed Dec 27 15:55:18 2017
 @author: paulo
 """
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 CROSSOVER_RATE = 0.9 #RATE OF CROSSOVER
 MUTATION_RATE = 0.001 #RATE OF MUTATION
@@ -66,8 +69,12 @@ best = []
 mean = []
 for gen in range(N_GENERATIONS):   
     fitness = PopFitness(pop)
+    best.append(np.max(fitness))
+    mean.append(np.mean(fitness))
+    #<elitism>
+    bestChrm = pop[fitness.index(best[-1])]
+    #</elitism>
     nextPop = []    
-    bestChrm = pop[fitness.index(np.max(fitness))]
     for i in range(POP_SIZE/2):
         father = pop[RoulleteSelection(fitness)]
         mother = pop[RoulleteSelection(fitness)]
@@ -86,21 +93,26 @@ for gen in range(N_GENERATIONS):
         nextPop.append(son)
         nextPop.append(daughter)
     pop = nextPop
-    best.append(np.max(fitness))
-    mean.append(np.mean(fitness))
-    
     #elitism
-    fitness = PopFitness(pop)
-    pop[fitness.index(np.min(fitness))] = bestChrm
+    auxF = PopFitness(pop)
+    pop[auxF.index(np.min(auxF))] = bestChrm
+    #</elitism>
+fitness = PopFitness(pop)
+best.append(np.max(fitness))
+mean.append(np.mean(fitness))   
 
-bestFitness = np.max(fitness)
+bestFitness = best[-1]
 indexSol = fitness.index(bestFitness)
 x1, x2 = ExtractX1X2(pop[indexSol])
 print "Solution: ("+str(x1)+", "+str(x2)+") with fitness: "+str(bestFitness)
-    
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+
+x = np.arange(0.0, N_GENERATIONS+1, 1.0)
+plt.plot(x, mean)
+plt.plot(x, best)
+plt.show()
+
+
+'''    
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 x = np.arange(MIN_INTERVAL/10, MAX_INTERVAL/10, 0.01)
@@ -117,3 +129,4 @@ ax.scatter(x1, x2, bestFitness, c='g', marker='^')
 ax.text(x1, x2, bestFitness, "Best Point Found", color='green')
 
 plt.show()
+'''
